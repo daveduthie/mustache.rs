@@ -1,1 +1,1 @@
-import("../pkg/index.js").catch(console.error);
+import { Mustache } from "../pkg/index.js";
