@@ -1,12 +1,18 @@
 extern crate nom;
+extern crate serde_json;
+extern crate string_builder;
+extern crate web_sys;
 
 mod parser;
 mod tokens;
+mod utils;
+
+use serde_json::Value;
+use string_builder::Builder;
 
 use parser::tokenize;
 use tokens::Tokens;
 use wasm_bindgen::prelude::*;
-use web_sys::console;
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
 // allocator.
@@ -16,31 +22,65 @@ use web_sys::console;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-// This is like the `main` function, except for JavaScript.
-#[wasm_bindgen(start)]
-pub fn main_js() -> Result<(), JsValue> {
-    // This provides better error messages in debug mode.
-    // It's disabled in release mode so it doesn't bloat up the file size.
-    #[cfg(debug_assertions)]
-    console_error_panic_hook::set_once();
+trait ILookup {
+    fn lookup(&self, path: &[String]) -> &Self;
+    fn ilookup_to_string(&self) -> String;
+}
 
-    // Your code goes here!
-    console::log_1(&JsValue::from_str("Hello world!"));
+impl ILookup for serde_json::Value {
+    fn lookup(&self, path: &[String]) -> &Self {
+        let mut ctx = self;
+        for name in path {
+            match ctx {
+                Value::Object(o) => match o.get(name) {
+                    Some(val) => ctx = val,
+                    None => return &serde_json::Value::Null,
+                },
+                Value::Array(_) => todo!(),
+                scalar => return scalar,
+            }
+        }
 
-    Ok(())
+        ctx
+    }
+
+    fn ilookup_to_string(&self) -> String {
+        match self {
+            Value::Null => String::default(),
+            Value::Bool(b) => b.to_string(),
+            Value::Number(n) => n.to_string(),
+            Value::String(s) => s.clone(),
+            Value::Array(a) => todo!(),
+            Value::Object(o) => todo!(),
+        }
+    }
 }
 
 #[wasm_bindgen]
 pub struct Mustache {
-    tokens: Tokens
+    tokens: Tokens,
 }
 
 #[wasm_bindgen]
 impl Mustache {
     pub fn new(template: &str) -> Self {
         let (_, tokens) = tokenize(template).unwrap(); // todo how to convert
-        Mustache {
-            tokens,
+        Mustache { tokens }
+    }
+
+    pub fn render(&self, ctx: &JsValue) -> String {
+        let ctx: serde_json::Value = ctx.into_serde().unwrap_or(serde_json::Value::Null);
+        let mut result = Builder::default();
+        utils::log!("ctx: {:?}", ctx);
+        for token in &self.tokens {
+            match token {
+                tokens::MustacheToken::Text(text) => result.append(text.clone()),
+                tokens::MustacheToken::Lookup(idents) => {
+                    result.append(ctx.lookup(idents).ilookup_to_string())
+                }
+            }
         }
+
+        result.string().unwrap_or(String::from(""))
     }
 }
