@@ -1,7 +1,10 @@
 extern crate nom;
 
-pub mod parser;
+mod parser;
+mod tokens;
 
+use parser::tokenize;
+use tokens::Tokens;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -29,14 +32,15 @@ pub fn main_js() -> Result<(), JsValue> {
 
 #[wasm_bindgen]
 pub struct Mustache {
-    template: String,
+    tokens: Tokens
 }
 
 #[wasm_bindgen]
 impl Mustache {
     pub fn new(template: &str) -> Self {
+        let (_, tokens) = tokenize(template).unwrap(); // todo how to convert
         Mustache {
-            template: template.to_string(),
+            tokens,
         }
     }
 }
