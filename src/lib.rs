@@ -64,7 +64,7 @@ pub struct Mustache {
 #[wasm_bindgen]
 impl Mustache {
     pub fn new(template: &str) -> Self {
-        let (_, tokens) = tokenize(template).unwrap(); // todo how to convert
+        let (_, tokens) = tokenize(template).unwrap(); // todo how to convert to a std result type?
         Mustache { tokens }
     }
 
