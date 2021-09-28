@@ -24,7 +24,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 trait ILookup {
     fn lookup(&self, path: &[String]) -> &Self;
-    fn ilookup_to_string(&self) -> String;
+    fn to_mustache_str(&self) -> String;
 }
 
 impl ILookup for serde_json::Value {
@@ -44,7 +44,7 @@ impl ILookup for serde_json::Value {
         ctx
     }
 
-    fn ilookup_to_string(&self) -> String {
+    fn to_mustache_str(&self) -> String {
         match self {
             Value::Null => String::default(),
             Value::Bool(b) => b.to_string(),
@@ -76,7 +76,7 @@ impl Mustache {
             match token {
                 tokens::MustacheToken::Text(text) => result.append(text.clone()),
                 tokens::MustacheToken::Lookup(idents) => {
-                    result.append(ctx.lookup(idents).ilookup_to_string())
+                    result.append(ctx.lookup(idents).to_mustache_str())
                 }
             }
         }
