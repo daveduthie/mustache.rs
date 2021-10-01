@@ -50,8 +50,7 @@ impl ILookup for serde_json::Value {
             Value::Bool(b) => b.to_string(),
             Value::Number(n) => n.to_string(),
             Value::String(s) => s.clone(),
-            Value::Array(a) => todo!(),
-            Value::Object(o) => todo!(),
+            val => serde_json::ser::to_string(val).unwrap(),
         }
     }
 }

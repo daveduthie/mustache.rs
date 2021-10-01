@@ -1,9 +1,8 @@
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::character::complete::{alpha1, space0};
-use nom::combinator::{fail, not, opt, success};
-use nom::error::{Error, ErrorKind};
-use nom::multi::{many0, many1, separated_list1};
+use nom::combinator::fail;
+use nom::multi::{many0, separated_list1};
 use nom::sequence::{delimited, terminated};
 use nom::IResult;
 
