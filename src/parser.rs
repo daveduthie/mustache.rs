@@ -2,18 +2,14 @@ use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::character::complete::{alpha1, space0};
 use nom::combinator::fail;
+use nom::IResult;
 use nom::multi::{many0, separated_list1};
 use nom::sequence::{delimited, terminated};
-use nom::IResult;
 
-use crate::tokens::{MustacheToken, Tokens};
+use crate::tokens::{MustacheToken, new_lookup, new_text, Tokens};
 
 type Result<'a> = IResult<&'a str, MustacheToken>;
 type TokenizeResult<'a> = IResult<&'a str, Tokens>;
-
-fn mlookup(identifiers: &[&str]) -> MustacheToken {
-    MustacheToken::Lookup(identifiers.iter().map(|s| String::from(*s)).collect())
-}
 
 fn lookup(input: &str) -> Result {
     let (rest, idents) = delimited(
@@ -21,16 +17,13 @@ fn lookup(input: &str) -> Result {
         separated_list1(tag("."), alpha1),
         terminated(space0, tag("}}")),
     )(input)?;
-    Ok((rest, mlookup(&idents)))
+    Ok((rest, new_lookup(&idents)))
 }
 
-fn mtext(text: &str) -> MustacheToken {
-    MustacheToken::Text(String::from(text))
-}
 
 fn until_lookup(input: &str) -> Result {
     match take_until("{{")(input) {
-        Ok((rest, text)) => Ok((rest, mtext(text))),
+        Ok((rest, text)) => Ok((rest, new_text(text))),
         Err(e) => Err(e),
     }
 }
@@ -38,7 +31,7 @@ fn until_lookup(input: &str) -> Result {
 fn rest_of_text(input: &str) -> Result {
     match input {
         "" => fail(input),
-        _ => Ok(("", mtext(input))),
+        _ => Ok(("", new_text(input))),
     }
 }
 
@@ -57,14 +50,14 @@ mod tests {
     #[test]
     fn lookup_test() {
         for (template, token) in vec![
-            ("{{x}}", mlookup(&vec!["x"])),
-            ("{{x.y}}", mlookup(&vec!["x", "y"])),
-            ("{{ x}}", mlookup(&vec!["x"])),
-            ("{{ x.y}}", mlookup(&vec!["x", "y"])),
-            ("{{x }}", mlookup(&vec!["x"])),
-            ("{{x.y }}", mlookup(&vec!["x", "y"])),
-            ("{{ x }}", mlookup(&vec!["x"])),
-            ("{{ x.y }}", mlookup(&vec!["x", "y"])),
+            ("{{x}}", new_lookup(&vec!["x"])),
+            ("{{x.y}}", new_lookup(&vec!["x", "y"])),
+            ("{{ x}}", new_lookup(&vec!["x"])),
+            ("{{ x.y}}", new_lookup(&vec!["x", "y"])),
+            ("{{x }}", new_lookup(&vec!["x"])),
+            ("{{x.y }}", new_lookup(&vec!["x", "y"])),
+            ("{{ x }}", new_lookup(&vec!["x"])),
+            ("{{ x.y }}", new_lookup(&vec!["x", "y"])),
         ] {
             assert_eq!(Ok(("", token)), lookup(template));
         }
@@ -73,9 +66,9 @@ mod tests {
     #[test]
     fn single_token_test() {
         for (template, token, rest) in vec![
-            ("abc", mtext("abc"), ""),
-            ("abc{{x}}", mtext("abc"), "{{x}}"),
-            ("{{x}}", mlookup(&vec!["x"]), ""),
+            ("abc", new_text("abc"), ""),
+            ("abc{{x}}", new_text("abc"), "{{x}}"),
+            ("{{x}}", new_lookup(&vec!["x"]), ""),
         ] {
             assert_eq!(Ok((rest, token)), single_token(template));
         }
@@ -84,11 +77,11 @@ mod tests {
     #[test]
     fn tokenize_test() {
         for (template, tokens) in vec![
-            ("{{x}}", vec![mlookup(&vec!["x"])]),
-            ("abc", vec![mtext("abc")]),
+            ("{{x}}", vec![new_lookup(&vec!["x"])]),
+            ("abc", vec![new_text("abc")]),
             (
                 "abc {{ x.y.z }} def",
-                vec![mtext("abc "), mlookup(&vec!["x", "y", "z"]), mtext(" def")],
+                vec![new_text("abc "), new_lookup(&vec!["x", "y", "z"]), new_text(" def")],
             ),
         ] {
             assert_eq!(Ok(("", tokens)), tokenize(template));
