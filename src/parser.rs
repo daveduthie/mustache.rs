@@ -20,7 +20,6 @@ fn lookup(input: &str) -> Result {
     Ok((rest, new_lookup(&idents)))
 }
 
-
 fn until_lookup(input: &str) -> Result {
     match take_until("{{")(input) {
         Ok((rest, text)) => Ok((rest, new_text(text))),

@@ -2,6 +2,8 @@ extern crate nom;
 extern crate serde_json;
 extern crate string_builder;
 extern crate web_sys;
+#[cfg(console_error_panic_hook)]
+extern crate console_error_panic_hook;
 
 mod parser;
 mod tokens;
@@ -13,14 +15,6 @@ use string_builder::Builder;
 use parser::tokenize;
 use tokens::Tokens;
 use wasm_bindgen::prelude::*;
-
-// When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
-// allocator.
-//
-// If you don't want to use `wee_alloc`, you can safely delete this.
-#[cfg(feature = "wee_alloc")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 trait ILookup {
     fn lookup(&self, path: &[String]) -> &Self;
@@ -53,6 +47,12 @@ impl ILookup for serde_json::Value {
             val => serde_json::ser::to_string(val).unwrap(),
         }
     }
+}
+
+#[cfg(console_error_panic_hook)]
+#[wasm_bindgen]
+pub fn init_panic_hook() {
+    console_error_panic_hook::set_once();
 }
 
 #[wasm_bindgen]

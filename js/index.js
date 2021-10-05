@@ -1,4 +1,6 @@
-import { Mustache } from "../pkg/index.js";
+import { Mustache, init_panic_hook } from "../pkg/index.js";
+
+// init_panic_hook();
 
 const ctx = {
     a: { b: { c: "banana" } },
