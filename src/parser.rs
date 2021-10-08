@@ -43,9 +43,11 @@ pub fn tokenize(input: &str) -> TokenizeResult {
     Ok((rest, tokens))
 }
 
-mod tests {
-    use super::*;
+#[cfg(test)]
+mod parser_tests {
 
+    use crate::parser::{tokenize, single_token, lookup};
+    use crate::tokens::{new_lookup, new_text};
     #[test]
     fn lookup_test() {
         for (template, token) in vec![
@@ -80,7 +82,11 @@ mod tests {
             ("abc", vec![new_text("abc")]),
             (
                 "abc {{ x.y.z }} def",
-                vec![new_text("abc "), new_lookup(&vec!["x", "y", "z"]), new_text(" def")],
+                vec![
+                    new_text("abc "),
+                    new_lookup(&vec!["x", "y", "z"]),
+                    new_text(" def"),
+                ],
             ),
         ] {
             assert_eq!(Ok(("", tokens)), tokenize(template));

@@ -1,23 +1,27 @@
+#[cfg(console_error_panic_hook)]
+extern crate console_error_panic_hook;
+extern crate lazy_static;
 extern crate nom;
 extern crate serde_json;
 extern crate string_builder;
 extern crate web_sys;
-#[cfg(console_error_panic_hook)]
-extern crate console_error_panic_hook;
 
 mod parser;
 mod tokens;
 mod utils;
 
-use serde_json::Value;
+use std::{collections::HashSet, sync::Mutex};
+
+use lazy_static::lazy_static;
+use serde_json::{json, Value};
 use string_builder::Builder;
 
 use parser::tokenize;
-use tokens::Tokens;
+use tokens::{MustacheToken, Tokens};
 use wasm_bindgen::prelude::*;
 
 trait ILookup {
-    fn lookup(&self, path: &[String]) -> &Self;
+    fn lookup(&self, path: &[String]) -> &serde_json::Value;
     fn to_mustache_str(&self) -> String;
 }
 
@@ -44,15 +48,22 @@ impl ILookup for serde_json::Value {
             Value::Bool(b) => b.to_string(),
             Value::Number(n) => n.to_string(),
             Value::String(s) => s.clone(),
-            val => serde_json::ser::to_string(val).unwrap(),
+            val => serde_json::ser::to_string(val).expect("failed to write json value"),
         }
     }
 }
 
-#[cfg(console_error_panic_hook)]
+type Context = serde_json::Value;
+
+lazy_static! {
+    static ref CONTEXT: Mutex<Context> = Mutex::new(json!(null));
+}
+
 #[wasm_bindgen]
-pub fn init_panic_hook() {
-    console_error_panic_hook::set_once();
+pub fn set_context(val: &JsValue) {
+    let parsed_val: serde_json::Value = val.into_serde().unwrap_or(json!(null));
+    let ctx: &mut Context = &mut CONTEXT.lock().unwrap();
+    *ctx = parsed_val;
 }
 
 #[wasm_bindgen]
@@ -63,23 +74,46 @@ pub struct Mustache {
 #[wasm_bindgen]
 impl Mustache {
     pub fn new(template: &str) -> Self {
-        let (_, tokens) = tokenize(template).unwrap(); // todo how to convert to a std result type?
+        // todo how to convert to a std result type?
+        let (_, tokens) = tokenize(template).unwrap();
         Mustache { tokens }
     }
 
-    pub fn render(&self, ctx: &JsValue) -> String {
-        let ctx: serde_json::Value = ctx.into_serde().unwrap_or(serde_json::Value::Null);
+    pub fn deps(&self, prefix: &JsValue) -> Vec<JsValue> {
+        let parsed_prefix: Vec<String> = JsValue::into_serde(prefix).expect("wot?");
+        let mut deps_set = HashSet::new();
+        let prefix_len = parsed_prefix.len();
+        for tok in &self.tokens {
+            if let MustacheToken::Lookup(idents) = tok {
+                if parsed_prefix == &idents[..prefix_len] {
+                    if let Some(ident) = idents.get(prefix_len) {
+                        deps_set.insert(ident);
+                    }
+                }
+            }
+        }
+        deps_set.iter().map(|s| JsValue::from(*s)).collect()
+    }
+
+    pub fn render(&self) -> String {
         let mut result = Builder::default();
-        utils::log!("ctx: {:?}", ctx);
+        let context = CONTEXT.lock().unwrap();
+
         for token in &self.tokens {
             match token {
                 tokens::MustacheToken::Text(text) => result.append(text.clone()),
                 tokens::MustacheToken::Lookup(idents) => {
-                    result.append(ctx.lookup(idents).to_mustache_str())
+                    result.append(context.lookup(idents).to_mustache_str())
                 }
             }
         }
 
         result.string().unwrap_or(String::from(""))
     }
+}
+
+#[cfg(console_error_panic_hook)]
+#[wasm_bindgen]
+pub fn init_panic_hook() {
+    console_error_panic_hook::set_once();
 }
