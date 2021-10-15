@@ -12,28 +12,6 @@ const importObject = {
     imports: { imported_func: arg => console.log(arg) }
 };
 
-const funcName = "exported_func";
-const moduleName = "simple"
-const modules = {};
-
-const loadModule = async (moduleName) => {
-    if (!modules[moduleName]) {
-        const mod = await WebAssembly
-            .instantiateStreaming(fetch(`${moduleName}.wasm`), importObject);
-        modules[moduleName] = mod;
-    }
-}
-
-const invokeFunc = async (moduleName, funcName) => {
-    await loadModule(moduleName);
-    const func = modules[moduleName].instance.exports[funcName];
-    console.log({modules});
-    return func();
-}
-
-invokeFunc("simple", "exported_func");
-invokeFunc("fib_bg", "fib");
-
 const userCalcs = {
     "b": function(_ctx) {
         console.log("Fun b evaluated")
@@ -83,3 +61,25 @@ app.innerText = rendered;
 //     performance.measure("parseTime", "start", "parsed");
 //     performance.measure("renderTime", "parsed", "rendered");
 // }
+
+// const funcName = "exported_func";
+// const moduleName = "simple"
+// const modules = {};
+
+// const loadModule = async (moduleName) => {
+//     if (!modules[moduleName]) {
+//         const mod = await WebAssembly
+//             .instantiateStreaming(fetch(`${moduleName}.wasm`), importObject);
+//         modules[moduleName] = mod;
+//     }
+// }
+
+// const invokeFunc = async (moduleName, funcName) => {
+//     await loadModule(moduleName);
+//     const func = modules[moduleName].instance.exports[funcName];
+//     console.log({modules});
+//     return func();
+// }
+
+// invokeFunc("simple", "exported_func");
+// invokeFunc("fib_bg", "fib");
