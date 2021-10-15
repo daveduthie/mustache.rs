@@ -6,19 +6,19 @@ extern crate serde_json;
 extern crate string_builder;
 extern crate web_sys;
 
-mod parser;
-mod tokens;
-mod utils;
-
 use std::{collections::HashSet, sync::Mutex};
 
 use lazy_static::lazy_static;
 use serde_json::{json, Value};
 use string_builder::Builder;
+use wasm_bindgen::prelude::*;
 
 use parser::tokenize;
 use tokens::{MustacheToken, Tokens};
-use wasm_bindgen::prelude::*;
+
+mod parser;
+mod tokens;
+mod utils;
 
 trait ILookup {
     fn lookup(&self, path: &[String]) -> &serde_json::Value;
@@ -55,6 +55,7 @@ impl ILookup for serde_json::Value {
 
 type Context = serde_json::Value;
 
+// TODO: replace with unsafe code: js is single threaded, so we don't need the mutex
 lazy_static! {
     static ref CONTEXT: Mutex<Context> = Mutex::new(json!(null));
 }

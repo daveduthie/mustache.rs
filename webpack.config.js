@@ -22,9 +22,9 @@ module.exports = {
         ]),
 
         new WasmPackPlugin({
-            crateDirectory: __dirname,
-            // extraArgs: "--features console_error_panic_hook",
-            forceMode: "production",
+            crateDirectory: path.resolve(__dirname, "mustache"),
+            extraArgs: "-- --features console_error_panic_hook",
+            // forceMode: "production",
         }),
     ]
 };

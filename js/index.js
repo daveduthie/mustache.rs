@@ -1,4 +1,4 @@
-import { Mustache, set_context, init_panic_hook } from "../pkg/index.js";
+import { Mustache, set_context, init_panic_hook } from "../mustache/pkg/index.js";
 
 // init_panic_hook();
 
@@ -8,12 +8,38 @@ const templates = [
     Mustache.new("this doesn't exist: {{ calc.dontexist }}"),
 ];
 
+const importObject = {
+    imports: { imported_func: arg => console.log(arg) }
+};
+
+const funcName = "exported_func";
+const moduleName = "simple"
+const modules = {};
+
+const loadModule = async (moduleName) => {
+    if (!modules[moduleName]) {
+        const mod = await WebAssembly
+            .instantiateStreaming(fetch(`${moduleName}.wasm`), importObject);
+        modules[moduleName] = mod;
+    }
+}
+
+const invokeFunc = async (moduleName, funcName) => {
+    await loadModule(moduleName);
+    const func = modules[moduleName].instance.exports[funcName];
+    console.log({modules});
+    return func();
+}
+
+invokeFunc("simple", "exported_func");
+invokeFunc("fib_bg", "fib");
+
 const userCalcs = {
-    "b": function (_ctx) {
+    "b": function(_ctx) {
         console.log("Fun b evaluated")
         return { c: "bananas" }
     },
-    "ifail": function (_ctx) {
+    "ifail": function(_ctx) {
         throw new Error("I fail")
     }
 }
