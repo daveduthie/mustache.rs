@@ -65,10 +65,12 @@ templates.map((m) => {
     })
 })
 
-initial_ctx.calc = calcResults;
+initial_ctx["calc"] = calcResults;
 set_context(initial_ctx);
 
-templates.map((m) => { console.log(m.render()) })
+const rendered = templates.reduce((acc, m) => { return acc + m.render() + "\n" }, "")
+const app = document.getElementById("app");
+app.innerText = rendered;
 
 // let i = 0;
 
