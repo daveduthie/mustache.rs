@@ -2,3 +2,4 @@ node_modules
 /target/
 /pkg/
 /.log/
+/static/*.wasm
