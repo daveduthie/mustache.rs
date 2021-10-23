@@ -1,50 +1,65 @@
-class QuickMaths {
+class WASMWrapper {
   constructor(instance) {
     this.instance = instance;
+    this.decoder = new TextDecoder();
+    this.encoder = new TextEncoder();
   }
 
-  difference(n1, n2) {
-    const { compute } = this.instance.exports;
-    const op = this.copyJsStringToRust("DIFF");
-    return compute(op, n1, n2);
+  invoke(funName, value) {
+    const fun = this.instance.exports[funName];
+    const valuePtr = this.copyStringToWasm(JSON.stringify(value));
+    const s = this.copyStringFromWasm(fun(valuePtr));
+    return JSON.parse(s);
   }
 
-  copyJsStringToRust(jsString) {
-    const { memory, stringPrepare, stringData, stringLen } = this.instance.exports;
+  copyStringFromWasm(jsInteropStr) {
+    const { memory, stringData, stringLen } = this.instance.exports;
+    const buf = new Uint8Array(
+      memory.buffer,
+      stringData(jsInteropStr),
+      stringLen(jsInteropStr)
+    );
+    return this.decoder.decode(buf);
+  }
 
-    const encoder = new TextEncoder();
-    const encodedString = encoder.encode(jsString);
+  copyStringToWasm(jsString) {
+    const { memory, stringPrepare, stringData } = this.instance.exports;
 
-    // Ask Rust code to allocate a string inside of the module's memory
-    const rustString = stringPrepare(encodedString.length);
+    const encodedString = this.encoder.encode(jsString);
+
+    // Ask WASM code to allocate a string inside of the module's memory
+    const wasmStr = stringPrepare(encodedString.length);
 
     // Get a JS view of the string data
-    const rustStringData = stringData(rustString);
-    const asBytes = new Uint8Array(memory.buffer, rustStringData, encodedString.length);
+    const rustStringData = stringData(wasmStr);
+    const asBytes = new Uint8Array(
+      memory.buffer,
+      rustStringData,
+      encodedString.length
+    );
 
     // Copy the UTF-8 into the WASM memory.
     asBytes.set(encodedString);
 
-    return rustString;
+    return wasmStr;
   }
 }
 
 const modules = {};
 
 const loadModule = async (moduleName) => {
-    if (!modules[moduleName]) {
-        const mod = await WebAssembly
-            .instantiateStreaming(fetch(`${moduleName}.wasm`));
-        modules[moduleName] = mod;
-    }
+  if (!modules[moduleName]) {
+    const mod = await WebAssembly.instantiateStreaming(
+      fetch(`${moduleName}.wasm`)
+    );
+    modules[moduleName] = mod;
+  }
 
-    return modules[moduleName];
-}
+  return new WASMWrapper(modules[moduleName].instance);
+};
 
 export async function doMaths() {
-
-  const { instance } = await loadModule("fib_bg")
-  const maffs = new QuickMaths(instance);
-
-  console.log(maffs.difference(100, 201));
+  const fib = await loadModule("fib_bg");
+  const result = fib.invoke("difference", { a: 1000, b: 200 });
+  console.log(JSON.stringify({ result }, null, 2));
 }

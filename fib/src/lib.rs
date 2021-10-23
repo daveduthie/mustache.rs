@@ -1,3 +1,6 @@
+extern crate serde;
+extern crate serde_json;
+
 // Very important to use `transparent` to prevent ABI issues
 #[repr(transparent)]
 pub struct JsInteropString(*mut String);
@@ -12,7 +15,7 @@ impl JsInteropString {
         JsInteropString(Box::into_raw(s))
     }
 
-    unsafe fn as_string(&self) -> &String {
+    pub unsafe fn as_string(&self) -> &String {
         &*self.0
     }
 
@@ -44,20 +47,38 @@ pub unsafe extern "C" fn stringLen(s: JsInteropString) -> usize {
     s.as_string().len()
 }
 
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize)]
+pub struct DifferenceArgs {
+    pub a: i32,
+    pub b: i32,
+}
+
+#[derive(Serialize)]
+pub struct DifferenceResult {
+    pub the_answer: i32,
+}
+
 #[no_mangle]
-pub unsafe extern "C" fn compute(s: JsInteropString, n1: i32, n2: i32) -> i32 {
-    let s = s.into_boxed_string();
-    real_code::compute(&s, n1, n2)
+pub unsafe extern "C" fn difference(s: JsInteropString) -> JsInteropString {
+    let mut ret = 0;
+    if let Ok(args) = serde_json::from_str(&s.as_string()[..]) {
+        let n = real_code::compute(args);
+        ret = n;
+    }
+
+    let result = DifferenceResult { the_answer: ret};
+    let result_str: String = serde_json::to_string(&result).unwrap();
+    
+    JsInteropString(Box::into_raw(Box::new(result_str)))
+   
 }
 
 mod real_code {
-    pub fn compute(operator: &str, n1: i32, n2: i32) -> i32 {
-        match operator {
-            "SUM" => n1 + n2,
-            "DIFF" => n1 - n2,
-            "MULT" => n1 * n2,
-            "DIV" => n1 / n2,
-            _ => 0,
-        }
+    use crate::DifferenceArgs;
+
+    pub fn compute(args: DifferenceArgs) -> i32 {
+        args.a - args.b
     }
 }
