@@ -181,7 +181,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c64630dcdd71f1a64c435f54885086a0de5d6a12d104d69b165fb7d5286d677"
 
 [[package]]
-name = "mustache"
+name = "mustache-rs"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",

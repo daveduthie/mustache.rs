@@ -60,7 +60,7 @@ const modules = {};
 const loadModule = async (moduleName) => {
   if (!modules[moduleName]) {
     const mod = await WebAssembly.instantiateStreaming(
-      fetch(`${moduleName}.wasm`)
+      fetch(moduleName)
     );
     modules[moduleName] = new WASMWrapper(mod);
   }
@@ -79,6 +79,6 @@ export async function invoke(moduleName, funName, value) {
 }
 
 export async function difference(value) {
-  let ret = await invoke("fib_bg", "difference", value);
+  let ret = await invoke("fib_bg.wasm", "difference", value);
   return ret;
 }

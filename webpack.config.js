@@ -26,7 +26,7 @@ module.exports = {
     new WasmPackPlugin({
       crateDirectory: path.resolve(__dirname, "mustache"),
       extraArgs: "-- --features console_error_panic_hook",
-      // forceMode: "production",
+      forceMode: "production",
     }),
   ],
   experiments: {
