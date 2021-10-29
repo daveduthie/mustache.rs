@@ -3,3 +3,9 @@ node_modules
 /pkg/
 /.log/
 /static/*.wasm
+/cljs-app/.cpcache/
+/cljs-app/target/
+/cljs-app/.rebel_readline_history
+/cljs-app/.nrepl-port
+/cljs-app/.log/
+/cljs-app/.lsp/*.db

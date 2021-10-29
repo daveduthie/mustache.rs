@@ -1,0 +1,12 @@
+^{:watch-dirs ["src"]
+  :open-url   false}
+{:main       hello-world.core
+ :target     :bundle
+
+ :bundle-cmd
+ {:none ["npx" "webpack" "--mode=development"
+         "--entry" :output-to
+         "--output-path" :final-output-dir
+         "--output-filename" :final-output-filename]}
+
+ }
