@@ -3,16 +3,17 @@ import { difference } from "./raw.js";
 
 const templates = [
   Mustache.new(
-    "this is the thing: {{ calc.b.c }}, more stuff here: {{ other.stuff }}"
+    "this is the thing: {{ calc.somefn.theanswer }}, more stuff here: {{ other.stuff }}"
   ),
   Mustache.new("this is x.y.z: {{ x.y.z }}, but I also want {{ calc.b.c }}"),
   Mustache.new("this doesn't exist: {{ calc.dontexist }}"),
+  // Mustache.new("fail! {{ calc.ifail }}"),
 ];
 
 const userCalcs = {
-  b: function (_ctx) {
+  somefn: function (_ctx) {
     console.log("Fun b evaluated");
-    return { c: "bananas" };
+    return { theanswer: "bananas" };
   },
   ifail: function (_ctx) {
     throw new Error("I fail");

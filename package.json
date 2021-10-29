@@ -3,7 +3,7 @@
   "name": "mustache.rs",
   "version": "0.1.0",
   "scripts": {
-    "build": "rimraf dist pkg && webpack",
+    "build": "rimraf dist pkg && webpack -c webpack.config.min.js",
     "start": "rimraf dist pkg && webpack-dev-server --open",
     "test": "cargo test && wasm-pack test --firefox --headless"
   },

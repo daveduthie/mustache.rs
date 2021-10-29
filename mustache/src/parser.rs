@@ -20,6 +20,8 @@ fn lookup(input: &str) -> Result {
     Ok((rest, new_lookup(&idents)))
 }
 
+// TODO: this is quite a nasty solution, and I'll probably need to find a better one to add more of
+// the mustache syntax
 fn until_lookup(input: &str) -> Result {
     match take_until("{{")(input) {
         Ok((rest, text)) => Ok((rest, new_text(text))),
