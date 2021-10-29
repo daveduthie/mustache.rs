@@ -20,13 +20,16 @@ mod parser;
 mod tokens;
 mod utils;
 
-trait ILookup {
-    fn lookup(&self, path: &[String]) -> &serde_json::Value;
+trait IAssociative {
+    fn get_in(&self, path: &[String]) -> &serde_json::Value;
+}
+
+trait IMustacheStr {
     fn to_mustache_str(&self) -> String;
 }
 
-impl ILookup for serde_json::Value {
-    fn lookup(&self, path: &[String]) -> &Self {
+impl IAssociative for serde_json::Value {
+    fn get_in(&self, path: &[String]) -> &Self {
         let mut ctx = self;
         for name in path {
             match ctx {
@@ -41,7 +44,9 @@ impl ILookup for serde_json::Value {
 
         ctx
     }
+}
 
+impl IMustacheStr for serde_json::Value {
     fn to_mustache_str(&self) -> String {
         match self {
             Value::Null => String::default(),
@@ -104,7 +109,7 @@ impl Mustache {
             match token {
                 tokens::MustacheToken::Text(text) => result.append(text.clone()),
                 tokens::MustacheToken::Lookup(idents) => {
-                    result.append(context.lookup(idents).to_mustache_str())
+                    result.append(context.get_in(idents).to_mustache_str())
                 }
             }
         }
