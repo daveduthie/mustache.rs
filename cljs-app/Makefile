@@ -1,8 +1,7 @@
 default: repl devServer
 
 repl: clean cljsdeps
-	clj -M:dev:fig --build dev --repl # fighweel broken when bundle + modules
-	# clj -M -m cljs.main --compile-opts build.edn -w src/cljs -c
+	clj -M:dev:fig --build dev --repl
 
 cljsdeps:
 	./bin/mkcljsdeps
