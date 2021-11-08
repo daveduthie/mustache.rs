@@ -2,11 +2,11 @@ use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::character::complete::{alpha1, space0};
 use nom::combinator::fail;
-use nom::IResult;
 use nom::multi::{many0, separated_list1};
 use nom::sequence::{delimited, terminated};
+use nom::IResult;
 
-use crate::tokens::{MustacheToken, new_lookup, new_text, Tokens};
+use crate::tokens::{new_lookup, new_text, MustacheToken, Tokens};
 
 type Result<'a> = IResult<&'a str, MustacheToken>;
 type TokenizeResult<'a> = IResult<&'a str, Tokens>;
@@ -48,7 +48,7 @@ pub fn tokenize(input: &str) -> TokenizeResult {
 #[cfg(test)]
 mod parser_tests {
 
-    use crate::parser::{tokenize, single_token, lookup};
+    use crate::parser::{lookup, single_token, tokenize};
     use crate::tokens::{new_lookup, new_text};
     #[test]
     fn lookup_test() {

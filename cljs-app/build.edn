@@ -1,0 +1,8 @@
+{:target        :bundle
+ :output-dir    "target/public/cljs-out/dev"
+ :asset-path    ""
+ :optimizations :none
+ :modules       {:core {:entries   #{hello-world.core}
+                        :output-to "target/public/cljs-out/dev/main.js"}
+                 :big  {:entries   #{hello-world.big}
+                        :output-to "target/public/cljs-out/dev/big.js"}}}

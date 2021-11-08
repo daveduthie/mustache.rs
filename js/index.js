@@ -1,14 +1,15 @@
 import { Mustache, set_context } from "../mustache/pkg/index.js";
 import { difference } from "./raw.js";
 
-const templates = [
-  Mustache.new(
-    "this is the thing: {{ calc.somefn.theanswer }}, more stuff here: {{ other.stuff }}"
-  ),
-  Mustache.new("this is x.y.z: {{ x.y.z }}, but I also want {{ calc.b.c }}"),
-  Mustache.new("this doesn't exist: {{ calc.dontexist }}"),
-  // Mustache.new("fail! {{ calc.ifail }}"),
-];
+const templates = [];
+
+for (let i = 0; i < 1000; i++) {
+  templates.push(
+    Mustache.new(
+      "this is the thing: {{ calc.somefn.theanswer }}, more stuff here: {{ other.stuff }}"
+    )
+  );
+}
 
 const userCalcs = {
   somefn: function (_ctx) {

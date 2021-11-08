@@ -1,13 +1,21 @@
-{:paths   ["src" "resources" "target"]
- :aliases {:fig {:main-opts ["-m" "figwheel.main"]}}
-
+{:paths   ["src/cljs" "resources" "target"]
+ :aliases {:dev { :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
+                             "-Dclojure.main.report=stderr"]}
+           :fig {:main-opts ["-m" "figwheel.main"]}}
 
  :deps {
-        com.bhauman/figwheel-main       {:mvn/version "0.2.14"}
+        com.bhauman/figwheel-main       {
+                                         #_#_
+                                         :mvn/version "0.2.14"
+                                         :local/root "../../figwheel-main"
+                                         }
         com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
         org.clojure/clojure             {:mvn/version "1.10.3"}
         org.clojure/core.async          {:mvn/version "1.3.618"}
-        org.clojure/clojurescript       {:mvn/version "1.10.879"
-                                         #_#_ :local/root      "../../../clojure/clojurescript"}
+        org.clojure/clojurescript       {
+                                         :mvn/version "1.10.879"
+                                         #_#_
+                                         :local/root "../../../clojure/clojurescript"
+                                         }
         reagent/reagent                 {:mvn/version "1.1.0" :exclusions [cljsjs/react cljsjs/react-dom]}
         }}

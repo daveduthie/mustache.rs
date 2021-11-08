@@ -68,11 +68,10 @@ pub unsafe extern "C" fn difference(s: JsInteropString) -> JsInteropString {
         ret = n;
     }
 
-    let result = DifferenceResult { the_answer: ret};
+    let result = DifferenceResult { the_answer: ret };
     let result_str: String = serde_json::to_string(&result).unwrap();
-    
+
     JsInteropString(Box::into_raw(Box::new(result_str)))
-   
 }
 
 mod real_code {

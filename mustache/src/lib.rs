@@ -14,7 +14,7 @@ use string_builder::Builder;
 use wasm_bindgen::prelude::*;
 
 use parser::tokenize;
-use tokens::{MustacheToken, Tokens};
+use tokens::{MustacheToken, Tokens, new_text};
 
 mod parser;
 mod tokens;

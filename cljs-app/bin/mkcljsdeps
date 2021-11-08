@@ -1,0 +1,10 @@
+#!/bin/env sh
+
+for DEP in 'libhunam' 'otherlib'
+do
+    DIR="node_modules/$DEP"
+    FILE="$DIR/index.js"
+    mkdir -p $DIR
+    touch $FILE
+    echo touched $FILE
+done
