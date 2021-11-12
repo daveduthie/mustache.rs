@@ -1,4 +1,4 @@
 * Set up
 
 - ~make repl~
-- (in another terminal) ~make devServer~
+- (in another terminal) ~make dev~

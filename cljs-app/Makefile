@@ -1,12 +1,10 @@
-default: repl devServer
-
 repl: clean cljsdeps
 	clj -M:dev:fig --build dev --repl
 
 cljsdeps:
 	./bin/mkcljsdeps
 
-devServer:
+dev:
 	npm start
 
 clean:
