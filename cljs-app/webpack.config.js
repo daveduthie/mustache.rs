@@ -9,6 +9,11 @@ module.exports = {
     base: "./target/public/cljs-out/dev/cljs_base.js",
     big: "./target/public/cljs-out/dev/big.js",
   },
+  resolve: {
+    alias: {
+      libhunam: path.resolve(__dirname, "src/ts/libhunam.tsx"),
+    },
+  },
   module: {
     rules: [
       {
@@ -25,15 +30,8 @@ module.exports = {
   output: {
     filename: "[name].js",
   },
-  resolve: {
-    // extensions: [".tsx", ".ts", ".js"],
-    alias: {
-      libhunam: path.resolve(__dirname, "src/ts/libhunam.tsx"),
-    },
-  },
   devServer: {
     static: ["./target/public", "./resources/public"],
-    liveReload: false, // figwheel handles this
     hot: true,
     compress: true,
     port: 9001,
