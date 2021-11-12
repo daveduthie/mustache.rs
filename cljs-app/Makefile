@@ -1,4 +1,4 @@
-repl: clean cljsdeps
+repl: cljsdeps
 	clj -M:dev:fig --build dev --repl
 
 cljsdeps:
