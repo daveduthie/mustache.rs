@@ -1,8 +1,4 @@
 * Set up
 
-1. I've pulled in a local copy of mustache-rs. Run =wasm-pack build=
-   in the [[../mustache][mustache]] directory to build the library.
-2. Jack in as usual.
-3. I'm using webpack to serve the app, since the http server figwheel
-   provides does not serve wasm with the correct MIME type. Start it
-   using =npm start=.
+- ~make repl~
+- (in another terminal) ~make devServer~

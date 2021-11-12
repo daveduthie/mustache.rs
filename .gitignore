@@ -9,3 +9,4 @@ node_modules
 /cljs-app/.nrepl-port
 /cljs-app/.log/
 /cljs-app/.lsp/*.db
+/cljs-app/pkg/
