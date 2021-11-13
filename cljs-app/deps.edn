@@ -8,11 +8,11 @@
                                          #_#_ :mvn/version "0.2.14"
                                          #_#_ :local/root "../../figwheel-main"
                                          :git/url "https://github.com/daveduthie/figwheel-main.git"
-                                         :sha "6d1495cdd1ffeb7509fb9bd36910c8375bc55b7a"
+                                         :sha "9f45a866174013b86d4ed3c311084adf73291115"
                                          }
         com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
         org.clojure/clojure             {:mvn/version "1.10.3"}
-        org.clojure/core.async          {:mvn/version "1.3.618"}
-        org.clojure/clojurescript       {:mvn/version "1.10.879"}
+        org.clojure/core.async          {:mvn/version "1.4.627"}
+        org.clojure/clojurescript       {:mvn/version "1.10.893"}
         reagent/reagent                 {:mvn/version "1.1.0" :exclusions [cljsjs/react cljsjs/react-dom]}
         }}

@@ -1,4 +1,7 @@
 ^{:open-url false, :watch-dirs ["src/cljs"]}
-{:modules {:big  {:entries #{hello-world.big}},
-           :main {:entries #{hello-world.main}}},
- :target  :bundle}
+{:modules        {:big  {:entries #{hello-world.big}},
+                  :main {:entries #{hello-world.main}}},
+ :target         :bundle
+ :aot-cache      true
+ :cache-analysis true
+ :parallel-build true}

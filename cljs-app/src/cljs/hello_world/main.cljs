@@ -10,7 +10,10 @@
    [reagent.core :as r]
    [reagent.dom :as dom]))
 
-(defn set-context [ctx] (go (.set-context (<p! mustache-rs) ctx)))
+(enable-console-print!)
+
+(defn set-context [ctx]
+  (go (.set-context (<p! mustache-rs)  ctx)))
 
 (defn template
   [str]
@@ -23,28 +26,27 @@
 
 (def initial-context {})
 
-(def calcs {:who     (fn [_] "The Who"),
+(def calcs {:who     (fn [_] "The Whose??"),
             :whoElse (fn [_] "Elsie")})
 
 (defn mustache-test
   []
   (let [*state (r/atom nil)]
-    (go (let [mustaches (<p! (js/Promise.all (map template mustache-templates)))
-              deps      (set (mapcat #(.deps % #js ["calc"]) mustaches))
-              calcs     (reduce (fn [acc dep]
-                                  (let [fun (or (get calcs (keyword dep))
-                                                (constantly nil))]
-                                    (assoc acc dep (fun initial-context))))
-                                {}
-                                deps)]
-          (<! (set-context (clj->js (assoc initial-context :calc calcs))))
-          (reset! *state (map #(.render %) mustaches))))
+    (go
+      (let [mustaches (<p! (js/Promise.all (map template mustache-templates)))
+            deps      (set (mapcat #(.deps % #js ["calc"]) mustaches))
+            calcs     (reduce (fn [acc dep]
+                                (let [fun (or (get calcs (keyword dep))
+                                              (constantly nil))]
+                                  (assoc acc dep (fun initial-context))))
+                              {}
+                              deps)]
+        (<! (set-context (clj->js (assoc initial-context :calc calcs))))
+        (reset! *state (map #(.render %) mustaches))))
     (fn []
       [:ul
        (doall (map (fn [rendered tpl] [:li {:key rendered}
-                                       tpl
-                                       " => "
-                                       rendered])
+                                       tpl " => " rendered])
                    @*state
                    mustache-templates))])))
 
@@ -52,17 +54,18 @@
   []
   (let [*bigComp (r/atom nil)]
     (fn []
-      [:div {:style {:margin "2em"}}
-       [:p "CLJS + Wasm Hello World"]
+      [:div {:style {:margin "3em"}}
+       [:p "CLJS + TS + Wasm Hello Worlds"]
        [mustache-test]
        [:pre (with-out-str (pprint/pprint {:libhunan/fun (libhunam-fun)}))]
        [:button
         {:on-click
          (fn [_]
-           (loader/load
-            :big
-            #(swap! *bigComp (resolve 'hello-world.big/app))))}
-        "Load big module"]
+           (when-not (some? @*bigComp)
+             (loader/load
+              :big
+              #(swap! *bigComp (resolve 'hello-world.big/app)))))}
+        "Load big module!"]
        (when-let [comp @*bigComp]
          comp)])))
 
