@@ -10,3 +10,4 @@ node_modules
 /cljs-app/.log/
 /cljs-app/.lsp/*.db
 /cljs-app/pkg/
+/cljs-app/.clj-kondo/.cache/

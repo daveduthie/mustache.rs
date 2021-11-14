@@ -5,15 +5,16 @@
    [clojure.core.async.interop :refer-macros [<p!]]
    [clojure.pprint :as pprint]
    [goog.dom :as gdom]
+   [helix.core :refer [$ defnc]]
+   [helix.dom :as d]
+   [helix.hooks :as hooks]
    [libhunam :refer [fun] :rename {fun libhunam-fun}]
    [mustache-rs]
-   [reagent.core :as r]
-   [reagent.dom :as dom]))
+   [react-dom :as rdom]))
 
 (enable-console-print!)
 
-(defn set-context [ctx]
-  (go (.set-context (<p! mustache-rs)  ctx)))
+(defn set-context [ctx] (go (.set-context (<p! mustache-rs) ctx)))
 
 (defn template
   [str]
@@ -26,50 +27,46 @@
 
 (def initial-context {})
 
-(def calcs {:who     (fn [_] "The Whose??"),
-            :whoElse (fn [_] "Elsie")})
+(def calcs {:who (fn [_] "The Whose??"), :whoElse (fn [_] "Elsie")})
 
-(defn mustache-test
-  []
-  (let [*state (r/atom nil)]
-    (go
-      (let [mustaches (<p! (js/Promise.all (map template mustache-templates)))
-            deps      (set (mapcat #(.deps % #js ["calc"]) mustaches))
-            calcs     (reduce (fn [acc dep]
-                                (let [fun (or (get calcs (keyword dep))
-                                              (constantly nil))]
-                                  (assoc acc dep (fun initial-context))))
-                              {}
-                              deps)]
-        (<! (set-context (clj->js (assoc initial-context :calc calcs))))
-        (reset! *state (map #(.render %) mustaches))))
-    (fn []
-      [:ul
-       (doall (map (fn [rendered tpl] [:li {:key rendered}
-                                       tpl " => " rendered])
-                   @*state
-                   mustache-templates))])))
+(defnc mustache-test []
+  (let [[state setState] (hooks/use-state nil)]
+    (when-not state
+      (go
+       (let [mustaches (<p! (js/Promise.all (map template mustache-templates)))
+             deps      (set (mapcat #(.deps % #js ["calc"]) mustaches))
+             calcs     (reduce (fn [acc dep]
+                                 (let [fun (or (get calcs (keyword dep))
+                                               (constantly nil))]
+                                   (assoc acc dep (fun initial-context))))
+                               {}
+                               deps)
+             ctx       (clj->js (assoc initial-context :calc calcs))]
+         (<! (set-context ctx))
+         (setState (map #(.render %) mustaches)))))
+    (d/ul
+     (doall (map (fn [rendered tpl] (d/li {:key rendered} tpl " => " rendered))
+                 state
+                 mustache-templates)))))
 
-(defn app
-  []
-  (let [*bigComp (r/atom nil)]
-    (fn []
-      [:div {:style {:margin "3em"}}
-       [:p "CLJS + TS + Wasm Hello Worlds"]
-       [mustache-test]
-       [:pre (with-out-str (pprint/pprint {:libhunan/fun (libhunam-fun)}))]
-       [:button
-        {:on-click
-         (fn [_]
-           (when-not (some? @*bigComp)
-             (loader/load
-              :big
-              #(reset! *bigComp (resolve 'hello-world.big/app)))))}
-        [:span "Load " [:strong "big"] " module"]]
-       (if-let [comp @*bigComp]
-         [comp]
-         [:p {:style {:margin "2em 0 0 2em"}} "placeholder"])])))
+(defnc app []
+  (let [[bigComp setBigComp] (hooks/use-state nil)]
+    (d/div {:style {:margin "3em"}}
+     (d/p "CLJS + TS + Wasm Hello Worlds")
+     ($ mustache-test)
+     (d/pre (with-out-str (pprint/pprint {:libhunan/fun (libhunam-fun)})))
+     (d/button
+      {:on-click (fn [_]
+                   (when-not (some? bigComp)
+                     (loader/load :big
+                                  #(setBigComp (constantly
+                                                @(resolve
+                                                  'hello-world.big/app))))))}
+      (d/span "Load " (d/strong "big") " module"))
+     (if-let [comp bigComp]
+       ($ comp)
+       (d/p {:style {:margin "2em 0 0 2em"}} "placeholder")))))
 
-(dom/render [app] (gdom/getElement "app"))
+(rdom/render ($ app) (gdom/getElement "app"))
 
 (loader/set-loaded! :main)
