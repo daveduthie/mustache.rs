@@ -2,3 +2,31 @@
 
 - ~make repl~
 - (in another terminal) ~make dev~
+
+* Workarounds
+
+** [[file:bin/mkcljsdeps][mkcljsdeps]]
+
+Cljs compiler indexes =node_modules= to locate js libs. When depending
+on one of these libs, the compiler emits require statements for
+webpack to resolve. We trick the compiler into emitting a require
+statement for our tsx lib (libhunam), and use webpack's
+=resolve.alias= configuration to locate the actual lib.
+
+** Stub namespaces
+
+When code splitting, the cljs compiler needs to assign each namespace
+to a module. Unfortunately, it seems libs in =node_modules= aren't
+considered in this process, which causes the module allocation code to
+choke. (shadow-cljs seems to suffer from the same problem, but the
+error message is better).
+
+** Webpack
+
+The cljs compiler can run a bundler via the =:bundle-cmd= option. This
+might be a good option (fewer commands to type to start developing),
+but the time to compile this example project from a cold start is non
+negligible, so I've stuck with two processes (figwheel, via =make
+repl=, and webpack, via =make dev=). Webpack also has some nice
+niceties like automatically reloading the page when index.html
+changes, and so on.

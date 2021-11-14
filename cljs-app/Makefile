@@ -1,3 +1,5 @@
+default: dev repl
+
 repl: cljsdeps
 	clj -M:dev:fig --build dev --repl
 

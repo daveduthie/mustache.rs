@@ -64,10 +64,11 @@
            (when-not (some? @*bigComp)
              (loader/load
               :big
-              #(swap! *bigComp (resolve 'hello-world.big/app)))))}
-        "Load big module!"]
-       (when-let [comp @*bigComp]
-         comp)])))
+              #(reset! *bigComp (resolve 'hello-world.big/app)))))}
+        [:span "Load " [:strong "big"] " module"]]
+       (if-let [comp @*bigComp]
+         [comp]
+         [:p {:style {:margin "2em 0 0 2em"}} "placeholder"])])))
 
 (dom/render [app] (gdom/getElement "app"))
 
